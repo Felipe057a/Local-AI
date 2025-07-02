@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Chat</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --background-color: #f5f7fa;
+      --card-color: #ffffff;
+      --text-color: #333;
+      --border-radius: 8px;
+      --shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+      --btn-bg: var(--primary-color);
+      --btn-color: #fff;
+      --btn-hover-bg: #357abd;
+      --input-border: #ccc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background-color);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--card-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 30px 40px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      resize: vertical;
+      transition: border-color 0.3s;
+      margin-bottom: 20px;
+      font-family: inherit;
+      color: var(--text-color);
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    button {
+      background-color: var(--btn-bg);
+      color: var(--btn-color);
+      border: none;
+      padding: 14px 25px;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: var(--btn-hover-bg);
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .response-box {
+      background: #e7f0fe;
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      border: 1px solid #c3dafd;
+      min-height: 80px;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #1a3e72;
+      white-space: pre-wrap;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Smart Chat</h1>
+
+    <div class="section" id="ask-section">
+      <label for="ask-input">Ask a question:</label>
+      <textarea id="ask-input" rows="3" placeholder="Type your question here..."></textarea>
+      <button id="ask-btn">Ask</button>
+      <div class="response-box" id="answer-box">Waiting for your question...</div>
+    </div>
+
+    <hr />
+
+    <div class="section" id="teach-section">
+      <label for="teach-question">Teach question:</label>
+      <input type="text" id="teach-question" placeholder="Type the question you want to teach" />
+      <label for="teach-answer">Teach answer:</label>
+      <textarea id="teach-answer" rows="3" placeholder="Type the corresponding answer"></textarea>
+      <button id="teach-btn">Teach</button>
+      <div class="response-box" id="teach-msg" style="background:#dff0d8; border-color:#c3e6cb; color:#3c763d; min-height:40px; margin-top:10px;"></div>
+    </div>
+
+    <div class="footer">
+      &copy; 2025 - Smart Chat by As-220
+    </div>
+  </div>
+
+  <script>
+    const askBtn = document.getElementById("ask-btn");
+    const askInput = document.getElementById("ask-input");
+    const answerBox = document.getElementById("answer-box");
+
+    const teachBtn = document.getElementById("teach-btn");
+    const teachQuestion = document.getElementById("teach-question");
+    const teachAnswer = document.getElementById("teach-answer");
+    const teachMsg = document.getElementById("teach-msg");
+
+    askBtn.addEventListener("click", () => {
+      const pergunta = askInput.value.trim();
+      if (!pergunta) {
+        answerBox.textContent = "Please, type a question.";
+        return;
+      }
+      answerBox.textContent = "Thinking...";
+
+      fetch("/perguntar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({pergunta})
+      })
+      .then(res => res.json())
+      .then(data => {
+        answerBox.textContent = data.resposta || "No answer.";
+      })
+      .catch(() => {
+        answerBox.textContent = "Error connecting to the server.";
+      });
+    });
+
+    teachBtn.addEventListener("click", () => {
+      const pergunta = teachQuestion.value.trim();
+      const resposta = teachAnswer.value.trim();
+
+      if (!pergunta || !resposta) {
+        teachMsg.textContent = "Please fill in both question and answer to teach.";
+        return;
+      }
+
+      teachMsg.textContent = "Teaching...";
+
+      fetch("/ensinar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({pergunta, resposta})
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          teachMsg.textContent = data.mensagem;
+          teachQuestion.value = "";
+          teachAnswer.value = "";
+        } else {
+          teachMsg.textContent = data.mensagem || "Unknown error.";
+        }
+      })
+      .catch(() => {
+        teachMsg.textContent = "Error connecting to the server.";
+      });
+    });
+  </script>
+</body>
+</html>
