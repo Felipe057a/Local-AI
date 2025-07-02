@@ -1,8 +1,7 @@
-Step 1- run server.py, for it, just install dependencies by:
+Step 1 – Run server.py. To do this, just install the dependencies by running:
+pip install flask
+Step 2 – Open your browser and go to the address and port displayed by server.py. It should look like this:
 
-from flask import Flask, request, jsonify, send_from_directory
-import json
-import os
-------------------------------------------------------------------
-Step 2- Go to the port displayed in the server.py in your browser, The port is similar to: http://xxx.x.x.x:xxxx
-Step 3- Use it!
+http://xxx.x.x.x:xxxx
+Step 3 – Start using the app!
+
